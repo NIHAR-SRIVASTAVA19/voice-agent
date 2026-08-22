@@ -1,0 +1,6 @@
+google-adk
+sarvamai
+litellm
+numpy
+sounddevice
+python-dotenv
