@@ -5,8 +5,7 @@ from root_agent.root_agent import (
     main_async,
     create_agent_session
 )
-import numpy as np
-import sounddevice as sd
+
 
 async def main():
 
@@ -24,7 +23,8 @@ async def main():
             stt_result = transcribe_audio(audio_path)
         except Exception as e:
             print("---------- STT failed ----------")
-            print(e)
+            print(f"Error: {e}")
+            print("Sorry, I couldn't understand your audio. Please try again.")
             continue
 
         print("---------- Your voice input is transcribed to text ----------")
@@ -44,20 +44,29 @@ async def main():
             )
         except Exception as e:
             print("---------- LLM call failed ----------")
-            print(e)
+            print(f"Error: {e}")
+            print("Sorry, I'm having trouble processing that. Please try again.")
             continue
 
-        print("---------- LLM response ----------")
-        print("LLM response:", llm_response)
 
-        try:
-            text_to_speech(
-            llm_response,
-            language=stt_result.language_code
-            )
-        except Exception as e:
-            print("---------- TTS call failed ----------")
-            print(e)
+        if not llm_response:
+            print("---------- Empty LLM response ----------")
+            print("Sorry, I couldn't generate a response. Please try again.")
+            continue
+        else:
+            print("---------- LLM response ----------")
+            print("LLM response:", llm_response)
+
+            try:
+                text_to_speech(
+                llm_response,
+                language=stt_result.language_code
+                )
+            except Exception as e:
+                print("---------- TTS failed ----------")
+                print(f"Error: {e}")
+                print("I generated a response, but I couldn't play the audio.")
+                continue
 
 
 if __name__ == "__main__":
