@@ -21,23 +21,26 @@ async def main():
 
         try:
             audio_path = record_audio()
-            speech_text = transcribe_audio(audio_path)
+            stt_result = transcribe_audio(audio_path)
         except Exception as e:
             print("---------- STT failed ----------")
             print(e)
             continue
 
         print("---------- Your voice input is transcribed to text ----------")
-        print("You said:", speech_text)
+        print("You said:", stt_result.transcript)
+        print("Language:", stt_result.language_code)
+        print("Language confidence:", stt_result.language_probability)
 
-        if speech_text.lower().strip() == "exit":
+        if stt_result.transcript.lower().strip() == "exit":
             print("Exiting the voice agent. Goodbye!")
             break
 
         try:
             llm_response = await main_async(
-                speech_text,
-                session.id
+                stt_result.transcript,
+                session.id,
+                stt_result.language_code
             )
         except Exception as e:
             print("---------- LLM call failed ----------")
@@ -48,7 +51,10 @@ async def main():
         print("LLM response:", llm_response)
 
         try:
-            text_to_speech(llm_response)
+            text_to_speech(
+            llm_response,
+            language=stt_result.language_code
+            )
         except Exception as e:
             print("---------- TTS call failed ----------")
             print(e)

@@ -1,10 +1,18 @@
 import os
 import wave
-
 import numpy as np
 import sounddevice as sd
 from dotenv import load_dotenv
 from sarvamai import SarvamAI
+from dataclasses import dataclass
+
+
+@dataclass
+class TranscriptionResult:
+    transcript: str
+    language_code: str
+    language_probability: float
+    request_id: str
 
 
 load_dotenv()
@@ -41,12 +49,24 @@ def record_audio(path: str = "mic_input.wav") -> str:
     return path
 
 
-def transcribe_audio(audio_path: str):
+def transcribe_audio(audio_path: str) -> TranscriptionResult:
     with open(audio_path, "rb") as audio_file:
         response = client.speech_to_text.transcribe(
             file=audio_file,
-            model="saaras:v3",
-            mode="transcribe"
+            model="saaras:v3",            # Specify the Saaras v3 model
+            language_code="unknown",      # Tells Saaras to auto-detect the base language
+            mode="codemix",               # Keeps English in English script & Indic text in native script
+            with_timestamps=True          # Optional: returns time boundaries for words
         )
+        return TranscriptionResult(
+        transcript=response.transcript,
+        language_code=response.language_code,
+        language_probability=response.language_probability,
+        request_id=response.request_id
+    )
 
-    return response.transcript
+
+if __name__ == "__main__":
+    audio_path = record_audio()
+    speech_text = transcribe_audio(audio_path)
+    print("Transcribed text:", speech_text)

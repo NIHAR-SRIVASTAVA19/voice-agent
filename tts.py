@@ -12,7 +12,7 @@ client = SarvamAI(
 
 def text_to_speech(
     text: str,
-    language: str = "hi-IN",
+    language: str,
     speaker: str = "shubh"
 ):
     response = client.text_to_speech.convert(

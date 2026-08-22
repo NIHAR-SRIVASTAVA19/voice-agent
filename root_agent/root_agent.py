@@ -34,12 +34,39 @@ async def create_agent_session():
     return session
 
 
-async def main_async(query: str, session_id: str):
+async def main_async(
+    query: str,
+    session_id: str,
+    language_code: str
+):
+
+    current_turn = f"""
+Current user message:
+{query}
+
+Detected dominant language:
+{language_code}
+
+Important:
+The detected language is the dominant language identified by the
+speech-to-text system. It does not necessarily mean that the user
+wants a monolingual response.
+
+Analyze the actual user message for code-mixing.
+
+If the message is code-mixed, respond naturally in the same
+code-mixed style.
+
+If the message is primarily one language, respond in that language.
+
+Always prioritize the language and communication style of the
+CURRENT user message rather than previous turns.
+"""
 
     new_message = types.Content(
         role="user",
         parts=[
-            types.Part(text=query)
+            types.Part(text=current_turn)
         ]
     )
 
@@ -50,11 +77,8 @@ async def main_async(query: str, session_id: str):
         session_id=session_id,
         new_message=new_message
     ):
-
         if event.is_final_response():
-
             if event.content and event.content.parts:
-
                 final_response = event.content.parts[0].text
 
     return final_response
